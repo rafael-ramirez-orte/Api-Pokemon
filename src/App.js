@@ -1,25 +1,52 @@
-import logo from './logo.svg';
-import './App.css';
+import React, { useEffect, useState } from 'react'
+import Pokemon from './components/Pokemon'
 
-function App() {
+const App = () => {
+
+   const[allPokemons, setAllPokemons] = useState([])
+   const [loadMore, setLoadMore] = useState('https://pokeapi.co/api/v2/pokemon?limit=10&offset=0')
+
+  const getAllPokemons = async () => {
+    const res = await fetch(loadMore)
+    const data = await res.json()
+
+    setLoadMore(data.next)
+
+    function createPokemonObject(results)  {
+      results.forEach( async pokemon => {
+        const res = await fetch(`https://pokeapi.co/api/v2/pokemon/${pokemon.name}`)
+        const data =  await res.json()
+        setAllPokemons( currentList => [...currentList, data])
+        await allPokemons.sort((a, b) => a.id - b.id)
+      })
+    }
+    createPokemonObject(data.results)
+  }
+
+ useEffect(() => {function getAllPokemons() {}
+  getAllPokemons();
+ }, [ ])
+
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+    <div className="app-contaner">
+      <h1>Lista de Pokemones</h1>
+      <div className="pokemon-container">
+        <div className="all-container">
+          {allPokemons.map( (pokemonStats, index) => 
+            <Pokemon
+              key={index}
+              id={pokemonStats.id}
+              image={pokemonStats.sprites.other.dream_world.front_default}
+              name={pokemonStats.name}
+              type={pokemonStats.types[0].type.name}
+            />)}
+          
+        </div>
+          <button className="Ver mas" onClick={() => getAllPokemons()}>Ver mas</button>
+      </div>
     </div>
   );
 }
 
 export default App;
+
